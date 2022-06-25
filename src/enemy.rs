@@ -11,16 +11,17 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(
-            SystemSet::new()
-                .with_run_criteria(FixedTimestep::step(1.0))
-                .with_system(enemy_spawn_system),
-        )
-        .add_system_set(
-            SystemSet::new()
-                .with_run_criteria(enemy_fire_criteria)
-                .with_system(enemy_fire_system),
-        );
+        app.insert_resource(EnemyCount(0))
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(FixedTimestep::step(1.0))
+                    .with_system(enemy_spawn_system),
+            )
+            .add_system_set(
+                SystemSet::new()
+                    .with_run_criteria(enemy_fire_criteria)
+                    .with_system(enemy_fire_system),
+            );
     }
 }
 
