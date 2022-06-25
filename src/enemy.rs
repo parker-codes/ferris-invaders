@@ -2,14 +2,18 @@ use crate::{
     components::{Enemy, SpriteSize},
     EnemyCount, GameTextures, WindowSize, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE,
 };
-use bevy::prelude::*;
+use bevy::{core::FixedTimestep, prelude::*};
 use rand::{thread_rng, Rng};
 
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(enemy_spawn_system);
+        app.add_system_set(
+            SystemSet::new()
+                .with_run_criteria(FixedTimestep::step(1.0))
+                .with_system(enemy_spawn_system),
+        );
     }
 }
 
