@@ -1,8 +1,8 @@
 use crate::{
-    components::{Enemy, SpriteSize},
-    EnemyCount, GameTextures, WindowSize, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE,
+    components::{Enemy, FromEnemy, Laser, Movable, SpriteSize, Velocity},
+    EnemyCount, GameTextures, WindowSize, ENEMY_LASER_SIZE, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE,
 };
-use bevy::{core::FixedTimestep, prelude::*};
+use bevy::{core::FixedTimestep, ecs::schedule::ShouldRun, prelude::*};
 use rand::{thread_rng, Rng};
 
 pub struct EnemyPlugin;
@@ -13,6 +13,11 @@ impl Plugin for EnemyPlugin {
             SystemSet::new()
                 .with_run_criteria(FixedTimestep::step(1.0))
                 .with_system(enemy_spawn_system),
+        )
+        .add_system_set(
+            SystemSet::new()
+                .with_run_criteria(enemy_fire_criteria)
+                .with_system(enemy_fire_system),
         );
     }
 }
@@ -45,5 +50,33 @@ fn enemy_spawn_system(
             .insert(SpriteSize::from(ENEMY_SIZE));
 
         enemy_count.0 += 1;
+    }
+}
+
+fn enemy_fire_system(mut commands: Commands, game_textures: Res<GameTextures>) {
+    println!("Creating enemy lasers!");
+
+    commands
+        .spawn_bundle(SpriteBundle {
+            texture: game_textures.enemy_laser.clone(),
+            transform: Transform {
+                translation: Vec3::new(0.0, 0.0, 10.0),
+                scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Laser)
+        .insert(FromEnemy)
+        .insert(SpriteSize::from(ENEMY_LASER_SIZE))
+        .insert(Movable { auto_despawn: true })
+        .insert(Velocity { x: 0.0, y: -1.0 });
+}
+
+fn enemy_fire_criteria() -> ShouldRun {
+    if thread_rng().gen_bool(1.0 / 60.0) {
+        ShouldRun::Yes
+    } else {
+        ShouldRun::No
     }
 }
