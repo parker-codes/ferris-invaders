@@ -37,7 +37,7 @@ const SPRITE_SCALE: f32 = 0.5;
 const TIME_STEP: f32 = 1.0 / 60.0;
 const BASE_SPEED: f32 = 500.0;
 const WINDOW_MARGIN: f32 = 200.0;
-const MAX_ENEMIES: u32 = 2;
+const MAX_ENEMIES: u32 = 4;
 const FORMATION_MEMBERS_MAX: u32 = 2;
 const PLAYER_RESPAWN_DELAY: f64 = 2.0;
 
