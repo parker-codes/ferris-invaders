@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use crate::{
     components::{Enemy, FromEnemy, Laser, Movable, SpriteSize, Velocity},
     EnemyCount, GameTextures, WindowSize, ENEMY_LASER_SIZE, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE,
@@ -67,6 +69,7 @@ fn enemy_fire_system(
                 texture: game_textures.enemy_laser.clone(),
                 transform: Transform {
                     translation: Vec3::new(enemy_x, y, 10.0),
+                    rotation: Quat::from_rotation_x(PI),
                     scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
                     ..Default::default()
                 },
