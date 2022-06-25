@@ -1,0 +1,8 @@
+[package]
+edition = "2021"
+name = "ferris-invaders"
+version = "0.1.0"
+
+[dependencies]
+bevy = "*"
+rand = "0.8.5"
