@@ -53,24 +53,31 @@ fn enemy_spawn_system(
     }
 }
 
-fn enemy_fire_system(mut commands: Commands, game_textures: Res<GameTextures>) {
-    println!("Creating enemy lasers!");
+fn enemy_fire_system(
+    mut commands: Commands,
+    game_textures: Res<GameTextures>,
+    enemy_query: Query<&Transform, With<Enemy>>,
+) {
+    for &enemy_tf in enemy_query.iter() {
+        let (enemy_x, enemy_y) = (enemy_tf.translation.x, enemy_tf.translation.y);
+        let y = enemy_y - 15.0;
 
-    commands
-        .spawn_bundle(SpriteBundle {
-            texture: game_textures.enemy_laser.clone(),
-            transform: Transform {
-                translation: Vec3::new(0.0, 0.0, 10.0),
-                scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
+        commands
+            .spawn_bundle(SpriteBundle {
+                texture: game_textures.enemy_laser.clone(),
+                transform: Transform {
+                    translation: Vec3::new(enemy_x, y, 10.0),
+                    scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
+                    ..Default::default()
+                },
                 ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(Laser)
-        .insert(FromEnemy)
-        .insert(SpriteSize::from(ENEMY_LASER_SIZE))
-        .insert(Movable { auto_despawn: true })
-        .insert(Velocity { x: 0.0, y: -1.0 });
+            })
+            .insert(Laser)
+            .insert(FromEnemy)
+            .insert(SpriteSize::from(ENEMY_LASER_SIZE))
+            .insert(Movable { auto_despawn: true })
+            .insert(Velocity { x: 0.0, y: -1.0 });
+    }
 }
 
 fn enemy_fire_criteria() -> ShouldRun {
