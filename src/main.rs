@@ -36,6 +36,7 @@ const SPRITE_SCALE: f32 = 0.5;
 const TIME_STEP: f32 = 1.0 / 60.0;
 const BASE_SPEED: f32 = 500.0;
 const WINDOW_MARGIN: f32 = 200.0;
+const MAX_ENEMIES: u32 = 2;
 
 /**
  * Resources
@@ -73,6 +74,8 @@ struct GameTextures {
     enemy_laser: Handle<Image>,
     explosion: Handle<TextureAtlas>,
 }
+
+struct EnemyCount(u32);
 
 fn main() {
     App::new()
@@ -122,6 +125,8 @@ fn setup_system(
         explosion,
     };
     commands.insert_resource(game_textures);
+
+    commands.insert_resource(EnemyCount(0));
 }
 
 fn movement_system(
@@ -151,6 +156,7 @@ fn player_laser_hit_enemy_system(
     mut commands: Commands,
     laser_query: Query<(Entity, &Transform, &SpriteSize), (With<Laser>, With<FromPlayer>)>,
     enemy_query: Query<(Entity, &Transform, &SpriteSize), With<Enemy>>,
+    mut enemy_count: ResMut<EnemyCount>,
 ) {
     let mut despawned_entities = HashSet::new();
 
@@ -188,6 +194,7 @@ fn player_laser_hit_enemy_system(
                 // remove enemy
                 commands.entity(enemy_entity).despawn();
                 despawned_entities.insert(enemy_entity);
+                enemy_count.0 -= 1;
 
                 // show explosion
                 commands
