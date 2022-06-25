@@ -15,17 +15,18 @@ mod player;
 /**
  * Asset Constants
  */
-const PLAYER_SPRITE: &str = "player_a_01.png";
+const PLAYER_SPRITE: &str = "player.png";
 const PLAYER_SIZE: (f32, f32) = (144.0, 75.0);
-const PLAYER_LASER_SPRITE: &str = "laser_a_01.png";
+const PLAYER_LASER_SPRITE: &str = "player-laser.png";
 const PLAYER_LASER_SIZE: (f32, f32) = (9.0, 54.0);
 
-const ENEMY_SPRITE: &str = "enemy_a_01.png";
+const ENEMY_1_SPRITE: &str = "enemy-1.png";
+const ENEMY_2_SPRITE: &str = "enemy-2.png";
 const ENEMY_SIZE: (f32, f32) = (144.0, 75.0);
-const ENEMY_LASER_SPRITE: &str = "laser_b_01.png";
+const ENEMY_LASER_SPRITE: &str = "enemy-laser.png";
 const ENEMY_LASER_SIZE: (f32, f32) = (17.0, 55.0);
 
-const EXPLOSION_SHEET: &str = "explo_a_sheet.png";
+const EXPLOSION_SHEET: &str = "explosion-sheet.png";
 const EXPLOSION_LENGTH: usize = 16;
 
 const SPRITE_SCALE: f32 = 0.5;
@@ -72,7 +73,8 @@ impl WindowSize {
 struct GameTextures {
     player: Handle<Image>,
     player_laser: Handle<Image>,
-    enemy: Handle<Image>,
+    enemy_1: Handle<Image>,
+    enemy_2: Handle<Image>,
     enemy_laser: Handle<Image>,
     explosion: Handle<TextureAtlas>,
 }
@@ -146,7 +148,8 @@ fn setup_system(
     let game_textures = GameTextures {
         player: asset_server.load(PLAYER_SPRITE),
         player_laser: asset_server.load(PLAYER_LASER_SPRITE),
-        enemy: asset_server.load(ENEMY_SPRITE),
+        enemy_1: asset_server.load(ENEMY_1_SPRITE),
+        enemy_2: asset_server.load(ENEMY_2_SPRITE),
         enemy_laser: asset_server.load(ENEMY_LASER_SPRITE),
         explosion,
     };

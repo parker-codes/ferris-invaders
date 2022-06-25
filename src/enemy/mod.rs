@@ -43,9 +43,15 @@ fn enemy_spawn_system(
         let formation = formation_maker.make(&window_size);
         let (x, y) = formation.start;
 
+        let texture = if thread_rng().gen_bool(0.5) {
+            game_textures.enemy_1.clone()
+        } else {
+            game_textures.enemy_2.clone()
+        };
+
         commands
             .spawn_bundle(SpriteBundle {
-                texture: game_textures.enemy.clone(),
+                texture,
                 transform: Transform {
                     translation: Vec3::new(x, y, 10.0),
                     scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
