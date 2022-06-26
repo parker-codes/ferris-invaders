@@ -1,7 +1,7 @@
 use crate::{
     components::{Enemy, FromEnemy, Laser, Movable, SpriteSize, Velocity},
-    EnemyCount, GameTextures, WindowSize, ENEMY_LASER_SIZE, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE,
-    TIME_STEP,
+    constants::{ENEMY_LASER_SIZE, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE, TIME_STEP},
+    EnemyCount, GameTextures, WindowSize,
 };
 use bevy::{core::FixedTimestep, ecs::schedule::ShouldRun, prelude::*};
 use rand::{thread_rng, Rng};

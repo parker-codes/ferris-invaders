@@ -5,118 +5,26 @@ use components::{
     Enemy, Explosion, ExplosionTimer, ExplosionToSpawn, FromEnemy, FromPlayer, Laser, Movable,
     Player, SpriteSize, Velocity,
 };
+use constants::{
+    BASE_SPEED, ENEMY_1_SPRITE, ENEMY_2_SPRITE, ENEMY_LASER_SPRITE, EXPLOSION_LENGTH,
+    EXPLOSION_SHEET, PLAYER_LASER_SPRITE, PLAYER_SPRITE, TIME_STEP,
+};
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
+use resources::{EnemyCount, GameTextures, PlayerState, WindowSize};
 
 mod components;
+mod constants;
 mod enemy;
 mod player;
-
-/**
- * Asset Constants
- */
-const PLAYER_SPRITE: &str = "player.png";
-const PLAYER_SIZE: (f32, f32) = (144.0, 75.0);
-const PLAYER_LASER_SPRITE: &str = "player-laser.png";
-const PLAYER_LASER_SIZE: (f32, f32) = (9.0, 54.0);
-
-const ENEMY_1_SPRITE: &str = "enemy-1.png";
-const ENEMY_2_SPRITE: &str = "enemy-2.png";
-const ENEMY_SIZE: (f32, f32) = (144.0, 75.0);
-const ENEMY_LASER_SPRITE: &str = "enemy-laser.png";
-const ENEMY_LASER_SIZE: (f32, f32) = (17.0, 55.0);
-
-const EXPLOSION_SHEET: &str = "explosion-sheet.png";
-const EXPLOSION_LENGTH: usize = 16;
-
-const SPRITE_SCALE: f32 = 0.5;
-
-/**
- * Game Constants
- */
-const TIME_STEP: f32 = 1.0 / 60.0;
-const BASE_SPEED: f32 = 500.0;
-const WINDOW_MARGIN: f32 = 200.0;
-const MAX_ENEMIES: u32 = 4;
-const FORMATION_MEMBERS_MAX: u32 = 2;
-const PLAYER_RESPAWN_DELAY: f64 = 2.0;
-
-/**
- * Resources
- */
-pub struct WindowSize {
-    pub width: f32,
-    pub height: f32,
-}
-impl WindowSize {
-    fn new(width: f32, height: f32) -> Self {
-        WindowSize { width, height }
-    }
-
-    fn top_bound(&self) -> f32 {
-        self.height / 2.0 + WINDOW_MARGIN
-    }
-
-    fn bottom_bound(&self) -> f32 {
-        -self.height / 2.0 - WINDOW_MARGIN
-    }
-
-    fn right_bound(&self) -> f32 {
-        self.width / 2.0 + WINDOW_MARGIN
-    }
-
-    fn left_bound(&self) -> f32 {
-        -self.width / 2.0 - WINDOW_MARGIN
-    }
-}
-
-struct GameTextures {
-    player: Handle<Image>,
-    player_laser: Handle<Image>,
-    enemy_1: Handle<Image>,
-    enemy_2: Handle<Image>,
-    enemy_laser: Handle<Image>,
-    explosion: Handle<TextureAtlas>,
-}
-
-struct EnemyCount(u32);
-
-struct PlayerState {
-    alive: bool,
-    last_shot: Option<f64>,
-}
-impl Default for PlayerState {
-    fn default() -> Self {
-        Self {
-            alive: false,
-            last_shot: None,
-        }
-    }
-}
-impl PlayerState {
-    fn shot(&mut self, time: f64) {
-        self.alive = false;
-        self.last_shot = Some(time);
-    }
-    fn spawned(&mut self) {
-        self.alive = true;
-        self.last_shot = None;
-    }
-}
+mod resources;
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
-        .insert_resource(WindowDescriptor {
-            title: "Ferris Invaders!".to_string(),
-            width: 598.0,
-            height: 676.0,
-            ..Default::default()
-        })
+        .add_startup_system(setup_system)
         .add_plugins(DefaultPlugins)
         .add_plugin(PlayerPlugin)
         .add_plugin(EnemyPlugin)
-        .add_startup_system(setup_system)
         .add_system(movement_system)
         .add_system(player_laser_hit_enemy_system)
         .add_system(enemy_laser_hit_player_system)
@@ -131,6 +39,15 @@ fn setup_system(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
+    commands.insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)));
+
+    commands.insert_resource(WindowDescriptor {
+        title: "Ferris Invaders!".to_string(),
+        width: 598.0,
+        height: 676.0,
+        ..Default::default()
+    });
+
     // camera
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
@@ -261,7 +178,7 @@ fn enemy_laser_hit_player_system(
 
                 // remove player
                 commands.entity(player_entity).despawn();
-                player_state.shot(time.seconds_since_startup());
+                player_state.mark_shot(time.seconds_since_startup());
 
                 // show explosion
                 commands

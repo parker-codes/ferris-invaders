@@ -1,7 +1,7 @@
 use crate::{
     components::{FromPlayer, Laser, Movable, Player, SpriteSize, Velocity},
-    GameTextures, PlayerState, WindowSize, PLAYER_LASER_SIZE, PLAYER_RESPAWN_DELAY, PLAYER_SIZE,
-    SPRITE_SCALE,
+    constants::{PLAYER_LASER_SIZE, PLAYER_RESPAWN_DELAY, PLAYER_SIZE, SPRITE_SCALE},
+    resources::{GameTextures, PlayerState, WindowSize},
 };
 use bevy::{core::FixedTimestep, prelude::*};
 
@@ -53,7 +53,7 @@ fn player_spawn_system(
             })
             .insert(Velocity { x: 0.0, y: 0.0 });
 
-        player_state.spawned();
+        player_state.mark_spawned();
     }
 }
 
