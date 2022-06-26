@@ -91,7 +91,7 @@ fn enemy_fire_system(
             .insert(FromEnemy)
             .insert(SpriteSize::from(ENEMY_LASER_SIZE))
             .insert(Movable { auto_despawn: true })
-            .insert(Velocity { x: 0.0, y: -1.0 });
+            .insert(Velocity { x: 0.0, y: -0.6 });
     }
 }
 
