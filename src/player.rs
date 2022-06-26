@@ -2,6 +2,7 @@ use crate::{
     components::{FromPlayer, Laser, Movable, Player, SpriteSize, Velocity},
     constants::{PLAYER_LASER_SIZE, PLAYER_RESPAWN_DELAY, PLAYER_SIZE, SPRITE_SCALE},
     resources::{GameTextures, PlayerState, WindowSize},
+    sprites::{player_laser_sprite, player_sprite},
 };
 use bevy::{core::FixedTimestep, prelude::*};
 
@@ -32,26 +33,13 @@ fn player_spawn_system(
             > player_state.last_shot.unwrap_or(-1.0) + PLAYER_RESPAWN_DELAY
     {
         let bottom = -window_size.height / 2.0;
+
         commands
-            .spawn_bundle(SpriteBundle {
-                texture: game_textures.player.clone(),
-                transform: Transform {
-                    translation: Vec3::new(
-                        0.0,
-                        bottom + PLAYER_SIZE.1 / 2.0 * SPRITE_SCALE + 5.0,
-                        10.0,
-                    ),
-                    scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
+            .spawn_bundle(player_sprite(game_textures.player.clone(), bottom))
             .insert(Player)
             .insert(SpriteSize::from(PLAYER_SIZE))
-            .insert(Movable {
-                auto_despawn: false,
-            })
-            .insert(Velocity { x: 0.0, y: 0.0 });
+            .insert(Movable::with_auto_despawn(false))
+            .insert(Velocity::none());
 
         player_state.mark_spawned();
     }
@@ -88,20 +76,15 @@ fn player_fire_system(
                 let y = player_y + 15.0;
 
                 commands
-                    .spawn_bundle(SpriteBundle {
-                        texture: game_textures.player_laser.clone(),
-                        transform: Transform {
-                            translation: Vec3::new(x, y, 0.0),
-                            scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    })
+                    .spawn_bundle(player_laser_sprite(
+                        game_textures.player_laser.clone(),
+                        (x, y),
+                    ))
                     .insert(Laser)
                     .insert(FromPlayer)
                     .insert(SpriteSize::from(PLAYER_LASER_SIZE))
-                    .insert(Movable { auto_despawn: true })
-                    .insert(Velocity { x: 0.0, y: 1.3 });
+                    .insert(Movable::with_auto_despawn(true))
+                    .insert(Velocity::y(1.3));
             };
 
             spawn_laser(x_offset); // right claw

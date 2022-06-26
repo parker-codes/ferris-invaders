@@ -12,12 +12,14 @@ use constants::{
 use enemy::EnemyPlugin;
 use player::PlayerPlugin;
 use resources::{EnemyCount, GameTextures, PlayerState, WindowSize};
+use sprites::explosion_sprite;
 
 mod components;
 mod constants;
 mod enemy;
 mod player;
 mod resources;
+mod sprites;
 
 fn main() {
     App::new()
@@ -83,15 +85,9 @@ fn movement_system(
         translation.x += velocity.x * TIME_STEP * BASE_SPEED;
         translation.y += velocity.y * TIME_STEP * BASE_SPEED;
 
-        if movable.auto_despawn {
-            // despawn once off-screen
-            if translation.y > window_size.top_bound()
-                || translation.y < window_size.bottom_bound()
-                || translation.x > window_size.right_bound()
-                || translation.x < window_size.left_bound()
-            {
-                commands.entity(entity).despawn();
-            }
+        if movable.should_auto_despawn() && window_size.doesnt_contain(translation) {
+            // remove because it's off-screen
+            commands.entity(entity).despawn();
         }
     }
 }
@@ -138,7 +134,7 @@ fn player_laser_hit_enemy_system(
                 // remove enemy
                 commands.entity(enemy_entity).despawn();
                 despawned_entities.insert(enemy_entity);
-                enemy_count.0 -= 1;
+                enemy_count.decrement();
 
                 // show explosion
                 commands
@@ -195,20 +191,14 @@ fn explosion_to_spawn_system(
     query: Query<(Entity, &ExplosionToSpawn)>,
 ) {
     for (explosion_entity, explosion_to_spawn) in query.iter() {
-        // spawn sprite
         commands
-            .spawn_bundle(SpriteSheetBundle {
-                texture_atlas: game_textures.explosion.clone(),
-                transform: Transform {
-                    translation: explosion_to_spawn.0,
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
+            .spawn_bundle(explosion_sprite(
+                game_textures.explosion.clone(),
+                explosion_to_spawn.0,
+            ))
             .insert(Explosion)
             .insert(ExplosionTimer::default());
 
-        // despawn
         commands.entity(explosion_entity).despawn();
     }
 }
@@ -224,7 +214,6 @@ fn explosion_animation_system(
         if timer.0.finished() {
             sprite.index += 1; // move to next sprite cell
             if sprite.index >= EXPLOSION_LENGTH {
-                // despawn
                 commands.entity(entity).despawn();
             }
         }

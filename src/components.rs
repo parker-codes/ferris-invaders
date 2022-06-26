@@ -14,9 +14,29 @@ pub struct Velocity {
     pub y: f32,
 }
 
+impl Velocity {
+    pub fn none() -> Self {
+        Self { x: 0.0, y: 0.0 }
+    }
+
+    pub fn y(value: f32) -> Self {
+        Self { x: 0.0, y: value }
+    }
+}
+
 #[derive(Component)]
 pub struct Movable {
-    pub auto_despawn: bool,
+    auto_despawn: bool,
+}
+
+impl Movable {
+    pub fn with_auto_despawn(set: bool) -> Self {
+        Self { auto_despawn: set }
+    }
+
+    pub fn should_auto_despawn(&self) -> bool {
+        self.auto_despawn
+    }
 }
 
 #[derive(Component)]

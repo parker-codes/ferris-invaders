@@ -1,5 +1,5 @@
-use crate::constants::WINDOW_MARGIN;
-use bevy::prelude::*;
+use crate::constants::{MAX_ENEMIES, WINDOW_MARGIN};
+use bevy::{math::Vec3, prelude::*};
 
 pub struct WindowSize {
     pub width: f32,
@@ -11,19 +11,26 @@ impl WindowSize {
         WindowSize { width, height }
     }
 
-    pub fn top_bound(&self) -> f32 {
+    pub fn doesnt_contain(&self, translation: &mut Vec3) -> bool {
+        translation.y > self.top_bound()
+            || translation.y < self.bottom_bound()
+            || translation.x > self.right_bound()
+            || translation.x < self.left_bound()
+    }
+
+    fn top_bound(&self) -> f32 {
         self.height / 2.0 + WINDOW_MARGIN
     }
 
-    pub fn bottom_bound(&self) -> f32 {
+    fn bottom_bound(&self) -> f32 {
         -self.height / 2.0 - WINDOW_MARGIN
     }
 
-    pub fn right_bound(&self) -> f32 {
+    fn right_bound(&self) -> f32 {
         self.width / 2.0 + WINDOW_MARGIN
     }
 
-    pub fn left_bound(&self) -> f32 {
+    fn left_bound(&self) -> f32 {
         -self.width / 2.0 - WINDOW_MARGIN
     }
 }
@@ -37,7 +44,22 @@ pub struct GameTextures {
     pub explosion: Handle<TextureAtlas>,
 }
 
-pub struct EnemyCount(pub u32);
+#[derive(Default)]
+pub struct EnemyCount(u32);
+
+impl EnemyCount {
+    pub fn increment(&mut self) {
+        self.0 += 1;
+    }
+
+    pub fn decrement(&mut self) {
+        self.0 -= 1;
+    }
+
+    pub fn has_availability(&self) -> bool {
+        self.0 < MAX_ENEMIES
+    }
+}
 
 pub struct PlayerState {
     pub alive: bool,

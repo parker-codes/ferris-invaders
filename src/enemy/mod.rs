@@ -1,13 +1,13 @@
+use self::formation::{Formation, FormationMaker};
 use crate::{
     components::{Enemy, FromEnemy, Laser, Movable, SpriteSize, Velocity},
-    constants::{ENEMY_LASER_SIZE, ENEMY_SIZE, MAX_ENEMIES, SPRITE_SCALE, TIME_STEP},
+    constants::{ENEMY_LASER_SIZE, ENEMY_SIZE, TIME_STEP},
+    sprites::{enemy_laser_sprite, enemy_sprite},
     EnemyCount, GameTextures, WindowSize,
 };
 use bevy::{core::FixedTimestep, ecs::schedule::ShouldRun, prelude::*};
 use rand::{thread_rng, Rng};
 use std::f32::consts::PI;
-
-use self::formation::{Formation, FormationMaker};
 
 mod formation;
 
@@ -15,7 +15,7 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(EnemyCount(0))
+        app.insert_resource(EnemyCount::default())
             .insert_resource(FormationMaker::default())
             .add_system_set(
                 SystemSet::new()
@@ -38,7 +38,7 @@ fn enemy_spawn_system(
     mut formation_maker: ResMut<FormationMaker>,
     mut enemy_count: ResMut<EnemyCount>,
 ) {
-    if enemy_count.0 < MAX_ENEMIES {
+    if enemy_count.has_availability() {
         // get formation and start x/y
         let formation = formation_maker.make(&window_size);
         let (x, y) = formation.start;
@@ -50,20 +50,12 @@ fn enemy_spawn_system(
         };
 
         commands
-            .spawn_bundle(SpriteBundle {
-                texture,
-                transform: Transform {
-                    translation: Vec3::new(x, y, 10.0),
-                    scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
+            .spawn_bundle(enemy_sprite(texture, (x, y)))
             .insert(Enemy)
             .insert(formation)
             .insert(SpriteSize::from(ENEMY_SIZE));
 
-        enemy_count.0 += 1;
+        enemy_count.increment();
     }
 }
 
@@ -77,21 +69,15 @@ fn enemy_fire_system(
         let y = enemy_y - 15.0;
 
         commands
-            .spawn_bundle(SpriteBundle {
-                texture: game_textures.enemy_laser.clone(),
-                transform: Transform {
-                    translation: Vec3::new(enemy_x, y, 10.0),
-                    rotation: Quat::from_rotation_x(PI),
-                    scale: Vec3::new(SPRITE_SCALE, SPRITE_SCALE, 1.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
+            .spawn_bundle(enemy_laser_sprite(
+                game_textures.enemy_laser.clone(),
+                (enemy_x, y),
+            ))
             .insert(Laser)
             .insert(FromEnemy)
             .insert(SpriteSize::from(ENEMY_LASER_SIZE))
-            .insert(Movable { auto_despawn: true })
-            .insert(Velocity { x: 0.0, y: -0.6 });
+            .insert(Movable::with_auto_despawn(true))
+            .insert(Velocity::y(-0.6));
     }
 }
 
